@@ -160,9 +160,14 @@ The robot spawned in Gazebo slowly moves by itself due to the minor issues with 
 
 ### Launch File to Start Robot in Gazebo
 
-Create a single launch file to spawn the robot in Gazebo. With this launch file, you will run `robot_state_publisher`, launch Gazebo, spawn the robot, and also start RViz with desired display configuration setting.
+Create a single launch file to spawn the robot in Gazebo instead of running multiple commands in the terminal. With this launch file, you will run `robot_state_publisher`, launch Gazebo, spawn the robot, and also start RViz with desired display configuration setting.
 
+First create a new package named `my_robot_bringup`. Note that the name 'ROBOT_NAME_bringup' is the preferred naming convention for ROS packages responsible for bringing up a robot.
 
+```
+cd ~/ros2_ws/src/
+ros2 pkg create my_robot_bringup
+```
 
 First create an empty launch file named `my_robot_gazebo.launch.xml` in the launch folder.
 
