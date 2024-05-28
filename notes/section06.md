@@ -153,3 +153,24 @@ Spawn the robot in Gazebo in a separate terminal. Note that the robot descriptio
 ```
 ros2 run gazebo_ros spawn_entity.py -topic robot_description -entity my_robot
 ```
+
+![Fig. 6-1](./images/6-1.png)
+
+The robot spawned in Gazebo slowly moves by itself due to the minor issues with current inertia setting. This will be fixed later.
+
+### Launch File to Start Robot in Gazebo
+
+Create a single launch file to spawn the robot in Gazebo. With this launch file, you will run `robot_state_publisher`, launch Gazebo, spawn the robot, and also start RViz with desired display configuration setting.
+
+
+
+First create an empty launch file named `my_robot_gazebo.launch.xml` in the launch folder.
+
+```
+cd ~/ros2_ws/src/my_robot_description/launch/
+touch my_robot_gazebo.launch.xml
+```
+
+
+
+
