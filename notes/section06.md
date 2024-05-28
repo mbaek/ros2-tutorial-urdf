@@ -89,4 +89,67 @@ Collision properties can be added to the URDF by adding a collision tag to the l
 </link>
 ```
 
-In this example the exact same geometry as visual has been considered for collision, but for robots with more complex shapes simplified geometries like box or cylinder can be used when adding collision properties reduce the computation load.
+In this example the exact same geometry as visual has been considered for collision, but for robots with more complex shapes simplified geometries like box or cylinder can be used when adding collision properties reduce the computation load. Similar to the change just made to `base_link`, add a collision property tag to `wheel_link` in `mobile_base.xacro` file.
+
+```
+<xacro:macro name="wheel_link" params="prefix">
+    <link name="${prefix}_wheel_link">
+        <visual>
+            <geometry>
+                <cylinder radius="${wheel_radius}" length="${wheel_length}" />
+            </geometry>
+            <origin xyz="0 0 0" rpy="${pi / 2.0} 0 0" />
+            <material name="grey" />
+        </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="${wheel_radius}" length="${wheel_length}" />
+            </geometry>
+            <origin xyz="0 0 0" rpy="${pi / 2.0} 0 0" />
+        </collision>
+        <xacro:cylinder_inertia m="1.0" r="${wheel_radius}" h="${wheel_length}" xyz="0 0 0" rpy="${pi / 2.0} 0 0" />
+    </link>
+</xacro:macro>
+```
+
+Also add a collision tag for `caster_wheel_link` in `mobile_base.xacro` file.
+
+```
+<link name="caster_wheel_link">
+    <visual>
+        <geometry>
+            <sphere radius="${wheel_radius / 2.0}" />
+        </geometry>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <material name="grey" />
+    </visual>
+    <collision>
+        <geometry>
+            <sphere radius="${wheel_radius / 2.0}" />
+        </geometry>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+    </collision>
+    <xacro:sphere_inertia m="0.5" r="${wheel_radius / 2.0}" xyz="0 0 0" rpy="0 0 0" />
+</link>
+```
+### Spawn the Robot in Gazebo
+
+Run `robot_state_publisher` as shown below. Make sure that the path to the URDF file is correctly given.
+
+```
+cd ~/ros2_ws/
+source install/setup.bash
+ros2 run robot_state_publisher robot_state_publisher --ros-args -p robot_description:="$(xacro $HOME/ros2_ws/src/my_robot_description/urdf/my_robot.urdf.xacro)"
+```
+
+Start Gazebo with the ROS integration in a separate terminal.
+
+```
+ros2 launch gazebo_ros gazebo.launch.py
+```
+
+Spawn the robot in Gazebo in a separate terminal. Note that the robot description topic name (-topic TOPIC_NAME) as well as the robot name (-entity ENTITY_NAME) must be correctly included as options.
+
+```
+ros2 run gazebo_ros spawn_entity.py -topic robot_description -entity my_robot
+```
