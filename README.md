@@ -15,4 +15,5 @@ This repository contains the notes I took while participating in the [ROS2 for B
 4. [Broadcast TFs with the Robot State Publisher](./notes/section04.md)
 5. [Improve the URDF with Xacro](./notes/section05.md)
 6. [Simulate Your Robot with Gazebo](./notes/section06.md)
+7. [Add a Sensor in Gazebo](./notes/section07.md)
 
