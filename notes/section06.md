@@ -160,7 +160,7 @@ The robot spawned in Gazebo slowly moves by itself due to the minor issues with 
 
 ### Launch File to Start Robot in Gazebo
 
-Create a single launch file to spawn the robot in Gazebo instead of running multiple commands in the terminal. With this launch file, you will run `robot_state_publisher`, launch Gazebo, spawn the robot, and also start RViz with desired display configuration setting.
+Create a single launch file to spawn the robot in Gazebo instead of running multiple commands in the terminal. With this launch file, you will publish the robot state, launch Gazebo, spawn the robot in Gazebo, and also start RViz with desired display configuration setting.
 
 First create a new package named `my_robot_bringup`. Note that the name 'ROBOT_NAME_bringup' is the preferred naming convention for ROS packages responsible for bringing up a robot.
 
@@ -169,13 +169,85 @@ cd ~/ros2_ws/src/
 ros2 pkg create my_robot_bringup
 ```
 
-First create an empty launch file named `my_robot_gazebo.launch.xml` in the launch folder.
+Remove unnecessary folders and create a folder for the new launch file to be written. Also create a folder for RViz configuration.
 
 ```
-cd ~/ros2_ws/src/my_robot_description/launch/
+cd my_robot_bringup/
+rm -rf include/ src/
+mkdir launch rviz
+```
+
+Modify `CMakeLists.txt` file for `my_robot_bringup` package. Make sure to add the launch folder under install and also give the destination as shown below.
+
+```
+cmake_minimum_required(VERSION 3.8)
+project(my_robot_bringup)
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
+# find dependencies
+find_package(ament_cmake REQUIRED)
+
+install(
+  DIRECTORY launch rviz
+  DESTINATION share/${PROJECT_NAME}
+)
+
+ament_package()
+```
+
+Copy and paste the previously created RViz configuration file.
+
+```
+cd ~/ros2_ws/src/my_robot_bringup/rviz/
+cp ~/ros2_ws/src/my_robot_description/rviz/urdf_config.rviz .
+```
+
+Create an empty launch file named `my_robot_gazebo.launch.xml` in the launch folder.
+
+```
+cd ~/ros2_ws/src/my_robot_bringup/launch/
 touch my_robot_gazebo.launch.xml
 ```
 
+Edit `my_robot_gazebo.launch.xml` file as shown below. You can use include tags to include other launch files.
 
+```
+<launch>
+    <let name="urdf_path" value="$(find-pkg-share my_robot_description)/urdf/my_robot.urdf.xacro" />
 
+    <let name="rviz_config_path" value="$(find-pkg-share my_robot_bringup)/rviz/urdf_config.rviz" />
+
+    <node pkg="robot_state_publisher" exec="robot_state_publisher">
+        <param name="robot_description" value="$(command 'xacro $(var urdf_path)')" />
+    </node>
+
+    <include file="$(find-pkg-share gazebo_ros)/launch/gazebo.launch.py" />
+
+    <node pkg="gazebo_ros" exec="spawn_entity.py" args="-topic robot_description -entity my_robot" />
+
+    <node pkg="rviz2" exec="rviz2" output="screen" args="-d $(var rviz_config_path)" />
+</launch>
+```
+
+And add the following additional dependencies to `package.xml` for `my_robot_bringup` package.
+
+```
+<exec_depend>my_robot_description</exec_depend>
+<exec_depend>robot_state_publisher</exec_depend>
+<exec_depend>gazebo_ros</exec_depend>
+```
+
+Build `my_robot_bringup` package and run a launch file with `my_robot_gazebo.launch.xml`.
+
+```
+cd ~/ros2_ws/
+colcon build --symlink-install --packages-select my_robot_bringup
+source install/setup.bash
+ros2 launch my_robot_bringup my_robot_gazebo.launch.xml
+```
+
+This should start everything we wanted for bringing up the robot. Notice in RViz that there are errors due to no transform from `left_wheel_link` and `right_wheel_link`. This is because `/joint_states` topics are not being published. In previous sections `joint_state_publisher_gui` package was used for this. This issue will be addressed later in the course.
 
