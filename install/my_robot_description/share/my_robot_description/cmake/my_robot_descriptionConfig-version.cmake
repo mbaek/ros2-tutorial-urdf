@@ -1,0 +1,1 @@
+/media/minjin/Data/Code/ros/ros2-for-beginners-level2/build/my_robot_description/ament_cmake_core/my_robot_descriptionConfig-version.cmake
