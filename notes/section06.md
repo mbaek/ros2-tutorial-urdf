@@ -251,3 +251,93 @@ ros2 launch my_robot_bringup my_robot_gazebo.launch.xml
 
 This should start everything we wanted for bringing up the robot. Notice in RViz that there are errors due to no transform from `left_wheel_link` and `right_wheel_link`. This is because `/joint_states` topics are not being published. In previous sections `joint_state_publisher_gui` package was used for this. This issue will be addressed later in the course.
 
+### Fixing the Inertia Values
+
+In previous sections, the drift of the robot was observed in Gazebo. This drift issue can be resolved by different ways (e.g., change the inertia, move `base_link` closer to the ground, or change the size of the contact point between the caster wheel and the ground) A quick way to fix this behavior is to increase the values for the inertia of the links in robot_description. For this exercise, you will simply introduce a factor of two to the dimension parameters for inertia calculation.
+
+Edit the inertia tags in `mobile_base.xacro` file instead of making changes directly to `xacro:macro` tags in `common_properties.xacro` file. First, modify `xacro:box_inertia` tag as shown below.
+
+```
+<xacro:cylinder_inertia m="1.0" r="${2.0 * wheel_radius}" h="${2.0 * wheel_length}" xyz="0 0 0" rpy="${pi / 2.0} 0 0" />
+
+```
+
+And modify `xacro:cylinder_inertia` tag as shown below.
+
+```
+<xacro:cylinder_inertia m="1.0" r="${2.0 * wheel_radius}" h="${2.0 * wheel_length}" xyz="0 0 0" rpy="${pi / 2.0} 0 0" />
+```
+
+Lastly, make the change below to `xacro:sphere_inertia` tag.
+
+```
+<xacro:sphere_inertia m="0.5" r="${2.0 * wheel_radius / 2.0}" xyz="0 0 0" rpy="0 0 0" />
+```
+
+### Fixing the Colors with Gazebo Material
+
+The current robot model spawned in Gazebo does not carry material properties such as color. Create an empty file named `mobile_base_gazebo.xacro` in the URDF folder for `my_robot_description` package.
+
+```
+cd $HOME/ros2_ws/src/my_robot_description/urdf/
+touch mobile_base_gazebo.xacro
+```
+
+Edit `mobile_base_gazebo.xacro` file and write `Gazebo` tags as follows.
+
+```
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <gazebo reference="base_link">
+        <material>Gazebo/Blue</material>
+    </gazebo>
+
+    <gazebo reference="right_wheel">
+        <material>Gazebo/Grey</material>
+    </gazebo>
+
+    <gazebo reference="left_link">
+        <material>Gazebo/Grey</material>
+    </gazebo>
+
+    <gazebo reference="caster_wheel_link">
+        <material>Gazebo/Grey</material>
+    </gazebo>
+
+</robot>
+```
+
+And also modify `my_robot.urdf.xacro` to add a new `include` tag for `mobile_base_gazebo.xacro`.
+
+```
+<?xml version="1.0"?>
+<robot name="my_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:include filename="common_properties.xacro" />
+    <xacro:include filename="mobile_base.xacro" />
+    <xacro:include filename="mobile_base_gazebo.xacro" />
+
+</robot>
+```
+
+Build `my_robot_description` package and run `my_robot_bringup` with `my_robot_gazebo.launch.xml`. You should be able to see the correct color for the robot model in Gazebo.
+
+```
+cd ~/ros2_ws/
+colcon build --symlink-install --packages-select my_robot_description
+source install/setup.bash
+ros2 launch my_robot_bringup my_robot_gazebo.launch.xml
+```
+![Fig. 6-2](./images/6-2.png)
+
+### Add Gazebo Plugins to Control the Robot
+
+
+
+Also, there is a tutorial for Gazebo plugins available from the official Gazebo site, which can be found [here](https://classic.gazebosim.org/tutorials?tut=ros_gzplugins).
+
+
+
+
+
