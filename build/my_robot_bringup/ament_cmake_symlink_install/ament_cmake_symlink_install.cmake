@@ -310,8 +310,8 @@ message(STATUS "Execute custom install script")
 
 # begin of custom install code
 
-# install(DIRECTORY "launch" "rviz" "DESTINATION" "share/my_robot_bringup")
-ament_cmake_symlink_install_directory("/media/minjin/Data/Code/ros/ros2-for-beginners-level2/src/my_robot_bringup" DIRECTORY "launch" "rviz" "DESTINATION" "share/my_robot_bringup")
+# install(DIRECTORY "launch" "rviz" "worlds" "DESTINATION" "share/my_robot_bringup")
+ament_cmake_symlink_install_directory("/media/minjin/Data/Code/ros/ros2-for-beginners-level2/src/my_robot_bringup" DIRECTORY "launch" "rviz" "worlds" "DESTINATION" "share/my_robot_bringup")
 
 # install(FILES "/media/minjin/Data/Code/ros/ros2-for-beginners-level2/build/my_robot_bringup/ament_cmake_index/share/ament_index/resource_index/package_run_dependencies/my_robot_bringup" "DESTINATION" "share/ament_index/resource_index/package_run_dependencies")
 ament_cmake_symlink_install_files("/media/minjin/Data/Code/ros/ros2-for-beginners-level2/src/my_robot_bringup" FILES "/media/minjin/Data/Code/ros/ros2-for-beginners-level2/build/my_robot_bringup/ament_cmake_index/share/ament_index/resource_index/package_run_dependencies/my_robot_bringup" "DESTINATION" "share/ament_index/resource_index/package_run_dependencies")

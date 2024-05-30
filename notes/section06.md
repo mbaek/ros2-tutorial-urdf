@@ -333,11 +333,170 @@ ros2 launch my_robot_bringup my_robot_gazebo.launch.xml
 
 ### Add Gazebo Plugins to Control the Robot
 
+To control the robot in Gazebo you will be adding a Gazebo plugin for differential drive control. There is a tutorial for Gazebo plugins available from the official Gazebo site, which can be found [here](https://classic.gazebosim.org/tutorials?tut=ros_gzplugins), but be aware that it contains some outdated information.
+
+You can find a more complete list of plugins that you can use from [Simulation Tools In ROS](https://github.com/ros-simulation) GitHub page. Go to [gazebo_ros_pkgs](https://github.com/ros-simulation/gazebo_ros_pkgs) repository and select the 'ros2' branch. Inside the `/gazebo_plugins/include/gazebo_plugins/` folder you can find various header files for different plugins, which can be directly accessed [here](https://github.com/ros-simulation/gazebo_ros_pkgs/tree/ros2/gazebo_plugins/include/gazebo_plugins). Select `gazebo_ros_diff_drive.hpp` and find `example usage`. Copy the following content of the `plugin` tag from `gazebo_ros_diff_drive.hpp` and paste it inside a new `gazebo` tag in `mobile_base_gazebo.xacro` file for `my_robot_description` package.
+
+```
+<plugin name="gazebo_ros_diff_drive" filename="libgazebo_ros_diff_drive.so">
+      <ros>
+        <!-- Add a namespace -->
+        <namespace>/test</namespace>
+      </ros>
+
+      <!-- Update rate in Hz -->
+      <update_rate>50</update_rate>
+
+      <!-- wheels -->
+      <left_joint>left_wheel_joint</left_joint>
+      <right_joint>right_wheel_joint</right_joint>
+
+      <!-- kinematics -->
+      <wheel_separation>1.25</wheel_separation>
+      <wheel_diameter>0.6</wheel_diameter>
+
+      <!-- limits -->
+      <max_wheel_torque>20</max_wheel_torque>observe
+      <!-- input -->
+      <command_topic>cmd_vel</command_topic>
+
+      <!-- output -->
+      <publish_odom>true</publish_odom>
+      <publish_odom_tf>true</publish_odom_tf>
+      <publish_wheel_tf>true</publish_wheel_tf>
+      <odometry_topic>odom</odometry_topic>
+      <odometry_frame>odom</odometry_frame>
+      <robot_base_frame>chassis</robot_base_frame>
+</plugin>
+```
+
+After copying the lines, modify the content of the `plugin` tag. First, change the plugin name to "diff_drive_controller". Inside the `plugin` tag, remove unnecessary lines associated with `ros` tag. Next, you need to change the joint names for `left_joint` and `right_joint` tags, which shall match those defined in `mobile_base.xacro` file (i.e., "base_left_wheel_joint" and "base_right_wheel_joint"). Also change the values for `wheel_separation` and `wheel_diameter` according to the values defined in `mobile_base.xacro`. And for this exercise, you can erase `max_wheel_torque`, `max_wheel_acceleration`, `command_topic` tags. Change `robot_base_frame` to "base_footprint". After all the changes are applied, `mobile_base_gazebo.xacro` file should look like this.
+
+```
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <gazebo reference="base_link">
+        <material>Gazebo/Blue</material>
+    </gazebo>
+
+    <gazebo reference="right_wheel">
+        <material>Gazebo/Grey</material>
+    </gazebo>
+
+    <gazebo reference="left_link">
+        <material>Gazebo/Grey</material>
+    </gazebo>
+
+    <gazebo reference="caster_wheel_link">
+        <material>Gazebo/Grey</material>
+    </gazebo>
+
+    <gazebo>
+        <plugin name="diff_drive_controller" filename="libgazebo_ros_diff_drive.so">
+            <!-- Update rate in Hz -->
+            <update_rate>50</update_rate>
+
+            <!-- wheels -->
+            <left_joint>base_left_wheel_joint</left_joint>
+            <right_joint>base_right_wheel_joint</right_joint>
+
+            <!-- kinematics -->
+            <wheel_separation>0.45</wheel_separation>
+            <wheel_diameter>0.2</wheel_diameter>
+
+            <!-- output -->
+            <publish_odom>true</publish_odom>
+            <publish_odom_tf>true</publish_odom_tf>
+            <publish_wheel_tf>true</publish_wheel_tf>
+            <odometry_topic>odom</odometry_topic>
+            <odometry_frame>odom</odometry_frame>
+            <robot_base_frame>base_footprint</robot_base_frame>
+        </plugin>
+    </gazebo>
+</robot>
+```
+
+Run `my_robot_bringup` with `my_robot_gazebo.launch.xml`. You should be able to see that now the wheels are correctly placed for the robot model displayed in the RViz window..
+
+```
+cd ~/ros2_ws/
+source install/setup.bash
+ros2 launch my_robot_bringup my_robot_gazebo.launch.xml
+```
+
+![Fig. 6-3](./images/6-3.png)
+
+To see the current nodes and topics, open the node graph, which should look
+```
+rqt_graph
+```
+
+![Fig. 6-4](./images/6-4.png)
+
+Now in a separate terminal, publish `/cmd_vel` topic as shown below to make the robot move.
+
+```
+ros2 topic pub /cmd_vel geometry_msgs/msg/Twist "{linear: {x: 0.5}, angular: {z: 0}}"
+```
+
+Publish `/cmd_vel` topic as shown below to make the robot stop.
+
+```
+ros2 topic pub /cmd_vel geometry_msgs/msg/Twist "{linear: {x: 0}, angular: {z: 0}}"
+```
+
+This will make the robot move but result in the bumpy movement due to the current setup of the caster wheel (the caster wheel joint is a 'fixed' type). This issue can be resolved by introducing friction coefficient values to the `caster_wheel_link`. Edit `mobile_base_gazebo.xacro` and add friction coefficient tags to the `gazebo` tag for `caster_wheel_link` as shown below.
+
+```
+<gazebo reference="caster_wheel_link">
+    <material>Gazebo/Grey</material>
+    <mu1 value="0.1" />
+    <mu2 value="0.1" />
+</gazebo>
+```
+
+Run the launch file again.
+
+```
+ros2 launch my_robot_bringup my_robot_gazebo.launch.xml
+```
+
+Publish `/cmd_vel` topic in a separate terminal as shown below to make the robot turn as it moves. Also observe in RViz how the two wheels of the robot rotate at different rates when turning.
+
+```
+ros2 topic pub /cmd_vel geometry_msgs/msg/Twist "{linear: {x: 0.5}, angular: {z: 0.1}}"
+```
+
+### Launch the Robot in the World
+
+Create a folder named "worlds" in `~/ros2_ws/src/my_robot_bringup/`. This folder will be used to save the Gazebo worlds. Retrieve a world file for testing and place it here.
 
 
-Also, there is a tutorial for Gazebo plugins available from the official Gazebo site, which can be found [here](https://classic.gazebosim.org/tutorials?tut=ros_gzplugins).
+Modify `CMakeLists.txt` file for `my_robot_bringup` package. Make sure to add the worlds folder under install as shown below.
 
+```
+install(
+  DIRECTORY launch rviz worlds
+  DESTINATION share/${PROJECT_NAME}
+)
+```
 
+Edit `my_robot_gazebo.launch.xml` file to add arguments to the `include` tag for launching Gazebo as shown below.
 
+```
+<include file="$(find-pkg-share gazebo_ros)/launch/gazebo.launch.py">
+    <arg name="world" value="$(find-pkg-share my_robot_bringup)/worlds/test_world.world" />
+</include>
+```
 
+Build `my_robot_bringup` package and run a launch file with `my_robot_gazebo.launch.xml`. The robot will be spawned in the Gazebo world as specified in `my_robot_gazebo.launch.xml` file.
 
+```
+cd ~/ros2_ws/
+colcon build --symlink-install --packages-select my_robot_bringup
+source install/setup.bash
+ros2 launch my_robot_bringup my_robot_gazebo.launch.xml
+```
+
+![Fig. 6-6](./images/6-6.png)
