@@ -16,4 +16,4 @@ This repository contains the notes I took while participating in the [ROS2 for B
 5. [Improve the URDF with Xacro](./notes/section05.md)
 6. [Simulate Your Robot with Gazebo](./notes/section06.md)
 7. [Add a Sensor in Gazebo](./notes/section07.md)
-
+8. [Final Project](./notes/section08.md)
