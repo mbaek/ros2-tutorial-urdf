@@ -41,4 +41,5 @@
             <robot_base_frame>base_footprint</robot_base_frame>
         </plugin>
     </gazebo>
+
 </robot>
