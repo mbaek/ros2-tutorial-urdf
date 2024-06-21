@@ -1,4 +1,5 @@
 /media/minjin/Data/Code/ros/ros2-for-beginners-level2/install/my_robot_description/share/my_robot_description/urdf/arm.xacro
+/media/minjin/Data/Code/ros/ros2-for-beginners-level2/install/my_robot_description/share/my_robot_description/urdf/arm_gazebo.xacro
 /media/minjin/Data/Code/ros/ros2-for-beginners-level2/install/my_robot_description/share/my_robot_description/urdf/camera.xacro
 /media/minjin/Data/Code/ros/ros2-for-beginners-level2/install/my_robot_description/share/my_robot_description/urdf/camera_gazebo.xacro
 /media/minjin/Data/Code/ros/ros2-for-beginners-level2/install/my_robot_description/share/my_robot_description/urdf/common_properties.xacro
