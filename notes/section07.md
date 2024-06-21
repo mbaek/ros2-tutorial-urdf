@@ -62,6 +62,7 @@ Edit `my_robot.urdf.xacro` to add `xacro:include` tag for the camera.
 ```
 
 Build `my_robot_description` package and run a launch file with `display.launch.xml` to visualize the camera installation.
+
 ```
 cd ~/ros2_ws/
 colcon build --packages-select my_robot_description --symlink-install
@@ -121,13 +122,15 @@ Open `my_robot_urdf.xacro` and add the following line for camera installation.
 <xacro:include filename="camera_gazebo.xacro" />
 ```
 
-Build `my_robot_description` package and run a launch file with `display.launch.xml` to visualize the camera installation. It is also possible to display the
+Build `my_robot_description` package and run a launch file with `my_robot_gazebo.launch.xml` to visualize the camera installation.
+
 ```
 cd ~/ros2_ws/
 colcon build --packages-select my_robot_description --symlink-install
 source install/setup.bash
 ros2 launch my_robot_bringup my_robot_gazebo.launch.xml
 ```
+
 ![Fig. 7-3](./images/7-3.png)
 
 It is also possible now to create visualization for the image topic in RViz by adding `/camera_sensor/image_raw`.
